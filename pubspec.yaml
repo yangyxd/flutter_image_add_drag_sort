@@ -1,0 +1,19 @@
+name: flutter_image_add_drag_sort
+description: Flutter Image add drag sort, Image add drag sort, support click event, delete, add, long press drag sort.
+version: 0.0.1
+author: yangyxd <yangyxd@126.com>
+homepage: https://github.com/yangyxd/flutter_image_add_drag_sort
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+# The following section is specific to Flutter.
+flutter:
