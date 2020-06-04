@@ -1,5 +1,13 @@
 library flutter_image_add_drag_sort;
 
+// Thanks: This part comes from draggable on pub_ Container, I'd like to make some changes to apply to it. Thank the original author.
+// 
+// A Draggable Widget Container. Each children is Draggable, Deletable and Fixable.
+// author: gzlock <gzlock88@gmail.com>
+// Pub: https://pub.dev/packages/draggable_container
+// Github: https://github.com/fluttercandies/flutter_draggable_container
+
+
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
