@@ -23,7 +23,6 @@ Flutter Image add drag sort, Image add drag sort, support click event, delete, a
 flutter_picker:
   git: git://github.com/yangyxd/flutter_image_add_drag_sort.git
 ```
-### or
 ```dart
 import 'package:flutter_picker/flutter_image_add_drag_sort.dart';
 ```
