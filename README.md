@@ -29,6 +29,8 @@ import 'package:flutter_picker/flutter_image_add_drag_sort.dart';
 
 ## example
 
+  * [Examples App](https://github.com/yangyxd/flutter_image_add_drag_sort/tree/master/example) - Demonstrates how to use the flutter_image_add_drag_sort plugin.
+
 ```dart
   List<ImageDataItem> imageList = [];
 
