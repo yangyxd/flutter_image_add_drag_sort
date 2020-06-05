@@ -24,7 +24,7 @@ flutter_picker:
   git: git://github.com/yangyxd/flutter_image_add_drag_sort.git
 ```
 ```dart
-import 'package:flutter_picker/flutter_image_add_drag_sort.dart';
+import 'package:flutter_image_add_drag_sort/flutter_image_add_drag_sort.dart';
 ```
 
 ## example
