@@ -8,10 +8,13 @@ import 'draggable/draggable_container.dart';
 class ImageDataItem {
   /// Image key. If an image is uploaded or added successfully, you need to specify a key, which can be the file name, time stamp, or key stored in the cloud
   final String key;
+
   /// image url or file path
   final String url;
+
   /// Video snapshot URL, if type = 1, this attribute will be used first to display
   final String fps;
+
   /// image type: 0 image， 1 video
   final int type;
 
@@ -42,7 +45,8 @@ class ImageAddDragContainer extends StatefulWidget {
     this.onChanged,
     this.onDelete,
     this.onTapItem,
-  }): assert(maxCount != null), super(key: key);
+  })  : assert(maxCount != null),
+        super(key: key);
 
   /// image data list
   final List<ImageDataItem> data;
@@ -56,7 +60,8 @@ class ImageAddDragContainer extends StatefulWidget {
   /// Add image event, return image data.
   ///
   /// The onBegin callback is used to display the wait animation when starting to add or upload an image
-  final Future<ImageDataItem> Function(Function([int index, bool fixed, bool deletable]) onBegin) onAddImage;
+  final Future<ImageDataItem> Function(
+      Function([int index, bool fixed, bool deletable]) onBegin) onAddImage;
 
   /// Image list change event
   final Future<void> Function(List<ImageDataItem> items) onChanged;
@@ -92,6 +97,7 @@ class ImageAddDragContainer extends StatefulWidget {
 
   /// Custom delete button, generally displayed in the upper right corner of imageItem
   final Widget deleteButton;
+
   /// Specify delete button offset
   final Offset deleteButtonPosition;
 
@@ -102,7 +108,8 @@ class ImageAddDragContainer extends StatefulWidget {
   State<StatefulWidget> createState() => _ImageAddDragContainerState();
 }
 
-typedef BuilderImageItem = Widget Function(BuildContext context, String key, String url, int type);
+typedef BuilderImageItem = Widget Function(
+    BuildContext context, String key, String url, int type);
 
 class _ImageAddDragContainerState extends State<ImageAddDragContainer> {
   final items = <DraggableItem>[];
@@ -115,51 +122,60 @@ class _ImageAddDragContainerState extends State<ImageAddDragContainer> {
     super.initState();
 
     imageList.addAll(widget.data);
-    _addButton = _MyItem(url: null, deletable: false, addWidget: widget.addWidget, widget: widget, onTap: () async {
-
-      final items = _containerKey.currentState.items;
-      final buttonIndex = items.indexOf(_addButton);
-      final nullIndex = items.length >= widget.maxCount ? -1 : items.length;
-      if (buttonIndex > -1) {
-        var item = _MyItem(url: '', deletable: false, fixed: false, widget: widget);
-        var isUploadBegin = false;
-        int index;
-        var newIndex;
-        var image = await widget.onAddImage(([_index, fixed, deletable]) async {
-          index = _index;
-          if (fixed != null) item.fixed = fixed;
-          if (deletable != null) item.deletable = deletable;
-          newIndex = buttonIndex;
-          var existIndex = index != null && index >= 0 && (index < nullIndex || (items.length == widget.maxCount));
-          if (existIndex)
-            newIndex = index;
-          if (nullIndex > -1) {
-            await _containerKey.currentState.addSlot(triggerEvent: false);
-            await _containerKey.currentState.insertOfIndex(newIndex, item, triggerEvent: false, force: true);
-          } else {
-            _containerKey.currentState.removeIndex(buttonIndex, triggerEvent: false);
-            await _containerKey.currentState.insertOfIndex(newIndex, item, force: true, triggerEvent: false);
+    _addButton = _MyItem(
+        url: null,
+        deletable: false,
+        addWidget: widget.addWidget,
+        widget: widget,
+        onTap: () async {
+          final items = _containerKey.currentState.items;
+          final buttonIndex = items.indexOf(_addButton);
+          final nullIndex = items.length >= widget.maxCount ? -1 : items.length;
+          if (buttonIndex > -1) {
+            var item = _MyItem(
+                url: '', deletable: false, fixed: false, widget: widget);
+            var isUploadBegin = false;
+            int index;
+            var newIndex;
+            var image =
+                await widget.onAddImage(([_index, fixed, deletable]) async {
+              index = _index;
+              if (fixed != null) item.fixed = fixed;
+              if (deletable != null) item.deletable = deletable;
+              newIndex = buttonIndex;
+              var existIndex = index != null &&
+                  index >= 0 &&
+                  (index < nullIndex || (items.length == widget.maxCount));
+              if (existIndex) newIndex = index;
+              if (nullIndex > -1) {
+                await _containerKey.currentState.addSlot(triggerEvent: false);
+                await _containerKey.currentState.insertOfIndex(newIndex, item,
+                    triggerEvent: false, force: true);
+              } else {
+                _containerKey.currentState
+                    .removeIndex(buttonIndex, triggerEvent: false);
+                await _containerKey.currentState.insertOfIndex(newIndex, item,
+                    force: true, triggerEvent: false);
+              }
+              isUploadBegin = true;
+            });
+            if (!isUploadBegin) return;
+            if (image != null) {
+              item.key = image.key;
+              item.url = image.url;
+              item.type = image.type;
+            }
+            if (item.key == null || item.key.isEmpty) {
+              _containerKey.currentState
+                  .removeIndex(newIndex, triggerEvent: false);
+              if (nullIndex > -1) await _containerKey.currentState.popSlot();
+            } else {
+              updateItemChild(item);
+              await _containerKey.currentState
+                  .insteadOfIndex(newIndex, item, force: true);
+            }
           }
-          isUploadBegin = true;
         });
-        if (!isUploadBegin)
-          return;
-        if (image != null) {
-          item.key = image.key;
-          item.url = image.url;
-          item.type = image.type;
-        }
-        if (item.key == null || item.key.isEmpty) {
-          _containerKey.currentState.removeIndex(newIndex, triggerEvent: false);
-          if (nullIndex > -1)
-            await _containerKey.currentState.popSlot();
-        } else {
-          updateItemChild(item);
-          await _containerKey.currentState.insteadOfIndex(newIndex, item, force: true);
-        }
-      }
-
-    });
 
     if (imageList.isNotEmpty) {
       updateItems();
@@ -167,35 +183,33 @@ class _ImageAddDragContainerState extends State<ImageAddDragContainer> {
     }
 
     if (widget.onAddImage != null) {
-      items.addAll([
-        _addButton
-      ]);
+      items.addAll([_addButton]);
     }
   }
 
   updateItemChild(_MyItem item) {
-   item.deletable = true;
+    item.deletable = true;
 
     var _onTap = () {
-      var index = imageList.indexWhere((element) => element.key == item.key && element.type == item.type);
+      var index = imageList.indexWhere(
+          (element) => element.key == item.key && element.type == item.type);
       if (widget.onTapItem != null && index >= 0)
         widget.onTapItem(imageList[index], index);
     };
 
     if (widget.builderItem == null) {
-      item.child = ImageItemView(key: Key("_img:" + item.url),
+      item.child = ImageItemView(
+          key: Key("_img:" + item.url),
           url: item.url,
           fps: item.fps,
           type: item.type,
           fit: widget.fit,
-          onTap: _onTap
-      );
+          onTap: _onTap);
     } else {
       Widget _view = widget.builderItem(context, item.key, item.url, item.type);
-      item.child = widget.onTapItem == null ? _view : GestureDetector(
-          child: _view,
-          onTap: _onTap
-      );
+      item.child = widget.onTapItem == null
+          ? _view
+          : GestureDetector(child: _view, onTap: _onTap);
     }
   }
 
@@ -224,15 +238,21 @@ class _ImageAddDragContainerState extends State<ImageAddDragContainer> {
     // await _containerKey.currentState.clear(triggerEvent: false);
     if (_addButton != null) {
       _addButton.addWidget = widget.addWidget;
-      _addButton.child = ImageItemView(url: _addButton.url,
+      _addButton.child = ImageItemView(
+          url: _addButton.url,
           type: _addButton.type,
           addWidget: widget.addWidget,
           onTap: _addButton.onTap);
     }
     this.items.clear();
-    var i = 0;
     for (var item in imageList) {
-      var v = _MyItem(key: item.key, type: item.type, url: item.url, fps: item.fps, fixed: item.type == 1, widget: widget);
+      var v = _MyItem(
+          key: item.key,
+          type: item.type,
+          url: item.url,
+          fps: item.fps,
+          fixed: item.type == 1,
+          widget: widget);
       updateItemChild(v);
       this.items.add(v);
     }
@@ -251,28 +271,35 @@ class _ImageAddDragContainerState extends State<ImageAddDragContainer> {
       readOnly: widget.readOnly,
       willPopScope: widget.willPopScope,
       color: widget.color,
-      slotDecoration: widget.slotDecoration ?? BoxDecoration(border: Border.all(width: 2, color: Theme.of(context).primaryColor.withAlpha(100))),
-      dragDecoration: widget.dragDecoration ?? BoxDecoration(boxShadow: [BoxShadow(color: Colors.black, blurRadius: 10)]),
+      slotDecoration: widget.slotDecoration ??
+          BoxDecoration(
+              border: Border.all(
+                  width: 2,
+                  color: Theme.of(context).primaryColor.withAlpha(100))),
+      dragDecoration: widget.dragDecoration ??
+          BoxDecoration(
+              boxShadow: [BoxShadow(color: Colors.black, blurRadius: 10)]),
       slotMargin: widget.margin,
       slotSize: widget.itemSize,
-      deleteButton: widget.deleteButton ?? Container(
-        width: 18,
-        height: 18,
-        child: Icon(Icons.close, size: 12.0, color: Colors.white),
-        decoration: BoxDecoration(
-          color: Colors.redAccent.withAlpha(50),
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-      ),
+      deleteButton: widget.deleteButton ??
+          Container(
+            width: 18,
+            height: 18,
+            child: Icon(Icons.close, size: 12.0, color: Colors.white),
+            decoration: BoxDecoration(
+              color: Colors.redAccent.withAlpha(50),
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+          ),
       deleteButtonPosition: widget.deleteButtonPosition ?? const Offset(0, 0),
       onChanged: (_items) async {
         imageList.clear();
         for (var _item in _items) {
           if (_item != null && _item is _MyItem && _item.url != null)
-            imageList.add(ImageDataItem(_item.url, key: _item.key, fps: _item.fps, type: _item.type));
+            imageList.add(ImageDataItem(_item.url,
+                key: _item.key, fps: _item.fps, type: _item.type));
         }
-        if (widget.onChanged != null)
-          widget.onChanged(imageList);
+        if (widget.onChanged != null) widget.onChanged(imageList);
       },
       onBeforeDelete: (index, item) async {
         if (widget.onDelete != null)
@@ -283,43 +310,70 @@ class _ImageAddDragContainerState extends State<ImageAddDragContainer> {
       onAfterDelete: (index, item) async {
         var buttonIndex = _containerKey.currentState.items.indexOf(_addButton);
         if (buttonIndex < 0) {
-          _containerKey.currentState.insteadOfIndex(_containerKey.currentState.items.length - 1, _addButton);
+          _containerKey.currentState.insteadOfIndex(
+              _containerKey.currentState.items.length - 1, _addButton);
         } else {
           _containerKey.currentState.moveTo(buttonIndex, buttonIndex - 1);
           _containerKey.currentState.popSlot();
         }
       },
-      onDraggableModeChanged: (bool draggableMode) {
-
-      },
+      onDraggableModeChanged: (bool draggableMode) {},
     );
   }
 }
 
 class _MyItem extends DraggableItem {
-  _MyItem({this.key, this.type = 0, this.url, this.fps, bool fixed = true, bool deletable = false, this.addWidget, this.onTap,
-    @required ImageAddDragContainer widget}): super(fixed: fixed, deletable: deletable) {
-    this.child = ImageItemView(keyStr: key, url: url, type: type, addWidget: addWidget, onTap: onTap, builder: widget.builderItem);
+  _MyItem(
+      {this.key,
+      this.type = 0,
+      this.url,
+      this.fps,
+      bool fixed = true,
+      bool deletable = false,
+      this.addWidget,
+      this.onTap,
+      this.child,
+      @required ImageAddDragContainer widget})
+      : super(fixed: fixed, deletable: deletable) {
+    this.child = this.child ?? ImageItemView(
+        keyStr: key,
+        url: url,
+        type: type,
+        addWidget: addWidget,
+        onTap: onTap,
+        builder: widget.builderItem);
   }
 
   Widget child, addWidget;
   final Function onTap;
 
-  /// 0 图像， 1 视频
+  /// 0 image， 1 video
   int type;
+
   String key;
   String fps;
-  @override
-  String toString() => key;
   String url;
+
+  @override
+  String toString() => "{DraggableItem: type: $type, key: $key, fixed: $fixed, url: $url, fps: $fps}";
 }
 
-
 class ImageItemView extends StatefulWidget {
-  const ImageItemView({Key key, this.keyStr, this.url, this.fps, this.type, this.addWidget, this.fit, this.builder, this.onTap}) : super(key: key);
+  const ImageItemView(
+      {Key key,
+      this.keyStr,
+      this.url,
+      this.fps,
+      this.type,
+      this.addWidget,
+      this.fit,
+      this.builder,
+      this.onTap})
+      : super(key: key);
   final String keyStr;
   final String url;
   final String fps;
+
   /// 0 图像， 1 视频
   final int type;
   final Widget addWidget;
@@ -334,7 +388,6 @@ class ImageItemView extends StatefulWidget {
 }
 
 class _ImageItemViewState extends State<ImageItemView> {
-
   @override
   void initState() {
     super.initState();
@@ -353,20 +406,24 @@ class _ImageItemViewState extends State<ImageItemView> {
   Widget build(BuildContext context) {
     Widget img;
     if (!widget.isEmpty && widget.url.isNotEmpty) {
-      String url = widget.type == 1 && !empty(widget.fps) ? widget.fps : widget.url;
+      String url =
+          widget.type == 1 && !empty(widget.fps) ? widget.fps : widget.url;
       if (widget.builder != null)
         img = widget.builder(context, widget.keyStr, url, widget.type);
       else {
         if (url != null && url.startsWith("http"))
-          img = Image.network(url,  fit: widget.fit == null ? BoxFit.cover : widget.fit);
+          img = Image.network(url,
+              fit: widget.fit == null ? BoxFit.cover : widget.fit);
         else
-          img = Image.file(File(url), fit: widget.fit == null ? BoxFit.cover : widget.fit);
+          img = Image.file(File(url),
+              fit: widget.fit == null ? BoxFit.cover : widget.fit);
       }
       if (widget.type == 1) {
         img = Stack(
           alignment: Alignment.center,
           children: <Widget>[
-            SizedBox(child: img, width: double.infinity, height: double.infinity),
+            SizedBox(
+                child: img, width: double.infinity, height: double.infinity),
             Container(
                 child: Icon(Icons.play_arrow, size: 20, color: Colors.white),
                 padding: const EdgeInsets.fromLTRB(11, 9, 9, 9),
@@ -376,27 +433,24 @@ class _ImageItemViewState extends State<ImageItemView> {
                 decoration: BoxDecoration(
                   color: Colors.black54,
                   shape: BoxShape.circle,
-                )
-            )
+                ))
           ],
         );
       }
     }
     return GestureDetector(
         child: Container(
-            child: !widget.isEmpty ?
-            (
-                widget.url.isEmpty ?
-                Container(padding: const EdgeInsets.all(16.0), child: CircularProgressIndicator(strokeWidth: 1.0)) :
-                img
-            ) :
-            widget.addWidget == null ? Icon(Icons.add) : widget.addWidget,
+            child: !widget.isEmpty
+                ? (widget.url.isEmpty
+                    ? Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: CircularProgressIndicator(strokeWidth: 1.0))
+                    : img)
+                : widget.addWidget == null ? Icon(Icons.add) : widget.addWidget,
             decoration: BoxDecoration(
               color: const Color(0xfff7f7f7),
               // border: Border.all(color: Styles.lineBtnBorderColor, width: 0.5),
-            )
-        ),
-        onTap: widget.onTap
-    );
+            )),
+        onTap: widget.onTap);
   }
 }
