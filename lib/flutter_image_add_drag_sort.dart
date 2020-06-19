@@ -160,6 +160,10 @@ class _ImageAddDragContainerState extends State<ImageAddDragContainer> {
               isUploadBegin = true;
             });
             if (!isUploadBegin) return;
+            if (newIndex != 0) {
+              var _nullIndex = imageList.indexWhere((item) => item.key == null);
+              if (_nullIndex >= 0) newIndex = _nullIndex;
+            }
             if (image != null) {
               item.key = image.key;
               item.url = image.url;
