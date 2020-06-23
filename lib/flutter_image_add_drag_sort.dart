@@ -60,8 +60,18 @@ class ImageAddDragContainer extends StatefulWidget {
   /// Add image event, return image data.
   ///
   /// The onBegin callback is used to display the wait animation when starting to add or upload an image
-  final Future<ImageDataItem> Function(
-      Function([int index, bool fixed, bool deletable]) onBegin) onAddImage;
+  ///
+  /// [uploading] The list of images being uploaded,
+  /// The image being uploaded will not appear in the [imageList],
+  /// in some cases, can be used to determine whether it is allowed or not.
+  ///
+  /// [onBegin] Start adding callback events. It needs to be called on the start add image.
+  ///  - [index] The location of the newly added image, which is last by default.
+  ///  - [fixed] Whether drag is allowed for new image
+  ///  - [deletable] Whether the new image can be deleted
+  ///  - [type] Tell us whether this is adding image or video, 0 or null means image, 1 means video
+  final Future<ImageDataItem> Function(List<ImageDataItem> uploading,
+      Function([int index, bool fixed, bool deletable, int type]) onBegin) onAddImage;
 
   /// Image list change event
   final Future<void> Function(List<ImageDataItem> items) onChanged;
@@ -132,16 +142,23 @@ class _ImageAddDragContainerState extends State<ImageAddDragContainer> {
           final buttonIndex = items.indexOf(_addButton);
           final nullIndex = items.length >= widget.maxCount ? -1 : items.length;
           if (buttonIndex > -1) {
+            // Get the list of images being uploaded
+            var uploading = <ImageDataItem>[];
+            items.forEach((item) {
+              if (item is _MyItem && item.key == null && item.addWidget == null)
+                uploading.add(ImageDataItem(item.url, type: item.type, key: item.key));
+            });
+            // Create a new item to upload
             var item = _MyItem(
                 url: '', deletable: false, fixed: false, widget: widget);
             var isUploadBegin = false;
             int index;
             var newIndex;
-            var image =
-                await widget.onAddImage(([_index, fixed, deletable]) async {
+            var image = await widget.onAddImage(uploading, ([_index, fixed, deletable, type]) async {
               index = _index;
               if (fixed != null) item.fixed = fixed;
               if (deletable != null) item.deletable = deletable;
+              if (type != null) item.type = type;
               newIndex = buttonIndex;
               var existIndex = index != null &&
                   index >= 0 &&

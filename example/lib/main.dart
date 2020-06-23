@@ -59,8 +59,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   draggableMode: false,
                   itemSize: Size(imgSize, imgSize),
                   addWidget: Icon(Icons.add, size: 24, color: Colors.black38),
-                  onAddImage: (onBegin) async {
-                    return await doAddImage(onBegin);
+                  onAddImage: (uploading, onBegin) async {
+                    return await doAddImage(uploading, onBegin);
                   },
                   onChanged: (items) async {
                     imageList = items;
@@ -83,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  doAddImage(onBegin) async {
+  doAddImage(List<ImageDataItem> uploading, onBegin) async {
     File image = await ImagePicker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 2048,
